@@ -11,9 +11,18 @@ in
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  # Enable the Cinnamon Desktop Environment.
-  services.xserver.displayManager.lightdm.enable = true;
-  services.xserver.desktopManager.cinnamon.enable = true;
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true;
+  };
+  services.desktopManager.plasma6.enable = true;
+
+  # Wayland support
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    MOZ_ENABLE_WAYLAND = "1";
+    QT_QPA_PLATFORM = "wayland";
+  };
   xdg.portal.enable = true;
 
   # Enable Printing
@@ -25,23 +34,64 @@ in
   };
 
   environment.systemPackages = with pkgs; [
-    git
+    alacritty
+    curl
     firefox
-    libnotify
-    gawk
-    gnugrep
-    sudo
-    gnome-software
-    gnome-calculator
-    gnome-calendar
-    gnome-screenshot
     flatpak
-    xdg-desktop-portal
-    xdg-desktop-portal-gtk
-    xdg-desktop-portal-gnome
+    gawk
+    git
+    gnugrep
+    kcalc           # KDE Calculator
+    libnotify
+    merkuro         # KDE Calendar
+    neovim
+    spectacle       # KDE Screenshot tool
+    sudo
     system-config-printer
   ];
 
+  # Optional: Set neovim as default editor
+  environment.variables = {
+    EDITOR = "nvim";
+    VISUAL = "nvim";
+    TERMINAL = "alacritty";
+  };
+  # XDG Portal for Wayland
+  xdg = {
+    portal = {
+      enable = true;
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-kde
+        xdg-desktop-portal-gtk  # Fallback for non-KDE apps
+      ];
+      configPackages = [ pkgs.kdePackages.plasma-desktop ];
+      
+      # Optional: Specific settings for KDE integration
+      config = {
+        common = {
+          default = [
+            "kde"
+            "gtk"
+          ];
+        };
+      };
+    };
+  };  # Optional: Set neovim as default editor
+  environment.variables = {
+    EDITOR = "nvim";
+    VISUAL = "nvim";
+    TERMINAL = "alacritty";
+  };
+  # XDG Portal for Wayland
+  xdg = {
+    portal = {
+      enable = true;
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-gtk
+        xdg-desktop-portal-kde
+      ];
+    };
+  };
   services.flatpak.enable = true;
 
   nix.gc = {
@@ -115,7 +165,6 @@ in
       nice -n 19 ionice -c 3 nixos-rebuild boot --upgrade
 
       # Fix for zoom flatpak
-      flatpak override --env=ZYPAK_ZYGOTE_STRATEGY_SPAWN=0 us.zoom.Zoom
     '';
     serviceConfig = {
       Type = "oneshot";

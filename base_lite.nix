@@ -12,22 +12,58 @@ in
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  # Enable the Cinnamon Desktop Environment.
-  services.xserver.displayManager.lightdm.enable = true;
-  services.xserver.desktopManager.cinnamon.enable = true;
-  xdg.portal.enable = true;
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true;
+  };
+  services.desktopManager.plasma6.enable = true;
+
+  # Wayland support
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    MOZ_ENABLE_WAYLAND = "1";
+    QT_QPA_PLATFORM = "wayland";
+  };
+
 
   environment.systemPackages = with pkgs; [
+    # Version control and network tools
     git
+    curl
+    neovim
+    alacritty
+
+    # Web browser
     firefox
+
+    # KDE Applications
     libnotify
+    kcalc           # KDE Calculator
+    merkuro         # KDE Calendar
+    spectacle       # KDE Screenshot tool
+
+    # System utilities
     gawk
     sudo
-    gnome-calculator
-    gnome-calendar
-    gnome-screenshot
     system-config-printer
   ];
+
+  # Optional: Set neovim as default editor
+  environment.variables = {
+    EDITOR = "nvim";
+    VISUAL = "nvim";
+    TERMINAL = "alacritty";
+  };
+  # XDG Portal for Wayland
+  xdg = {
+    portal = {
+      enable = true;
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-gtk
+        xdg-desktop-portal-kde
+      ];
+    };
+  };
 
   nix.gc = {
     automatic = true;
