@@ -23,7 +23,6 @@ in
     MOZ_ENABLE_WAYLAND = "1";
     QT_QPA_PLATFORM = "wayland";
   };
-  xdg.portal.enable = true;
 
   # Enable Printing
   services.printing.enable = true;
@@ -75,21 +74,6 @@ in
           ];
         };
       };
-    };
-  };  # Optional: Set neovim as default editor
-  environment.variables = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-    TERMINAL = "alacritty";
-  };
-  # XDG Portal for Wayland
-  xdg = {
-    portal = {
-      enable = true;
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-gtk
-        xdg-desktop-portal-kde
-      ];
     };
   };
   services.flatpak.enable = true;
